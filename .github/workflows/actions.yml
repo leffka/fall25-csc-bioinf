@@ -1,0 +1,33 @@
+name: Github CI
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 Branch: ${{ github.ref }}  Repo: ${{ github.repository }}"
+      - name: Install Codon
+        run: |
+          set -euxo pipefail
+          mkdir -p "${HOME}/.codon/lib/codon/plugins"
+          curl -L https://github.com/exaloop/codon/releases/download/v0.19.3/codon-linux-x86_64.tar.gz | tar zxvf - --strip-components=1 -C "${HOME}/.codon"
+          curl -L https://github.com/exaloop/seq/releases/download/v0.11.5/seq-linux-x86_64.tar.gz | tar zxvf - -C "${HOME}/.codon/lib/codon/plugins"
+          echo "${HOME}/.codon/bin" >> $GITHUB_PATH
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Set up Codon Python bridge
+        run: |
+          set -euxo pipefail
+          python -m pip install --upgrade pip find_libpython
+          echo "CODON_PYTHON=$(python - <<'PY'
+import find_libpython as f; print(f.find_libpython())
+PY
+)" >> $GITHUB_ENV
+          echo "Found Python at: ${CODON_PYTHON}"
+      - name: Week 1
+        run: |
+          bash week1/evaluate.sh
