@@ -12,6 +12,9 @@ ZC_REF="${ZC_REF:-master}"
 mkdir -p "${WORK_DIR}"
 pushd "${WORK_DIR}" >/dev/null
 
+# Get Python path once and reuse it everywhere
+PYTHON="$(command -v python3 >/dev/null 2>&1 && echo python3 || echo python)"
+
 if [ ! -d "${PY_IMPL_DIR}" ]; then
   git clone --depth=1 --branch "${ZC_REF}" "${ZC_REPO}" "${PY_IMPL_DIR}"
 fi
@@ -22,15 +25,10 @@ for z in data1.zip data2.zip data3.zip data4.zip; do
 done
 popd
 
-find_contigs_file() {
+find_contigs_fasta() {
+  # Only return FASTA-like files (no arbitrary files)
   local dir="$1"
-  local cand
-  cand="$(ls -t ${dir}/*.{fa,fasta,fna,txt} 2>/dev/null | head -n1 || true)"
-  if [ -n "${cand:-}" ]; then
-    echo "$cand"
-  else
-    ls -t "${dir}"/* 2>/dev/null | head -n1
-  fi
+  ls -t ${dir}/*.{fa,fasta,fna} 2>/dev/null | head -n1 || true
 }
 
 fmt_hms() {
@@ -47,15 +45,12 @@ run_with_timer() {
 }
 
 run_one() {
-  local DATA="$1"
-  local LANG="$2"
-  local IMPL_DIR
-  local CMD
-  local PYTHON
-  PYTHON="$(command -v python3 >/dev/null 2>&1 && echo python3 || echo python)"
+  local DATA="$1" LANG="$2"
+  local IMPL_DIR CMD CODON_BIN
+
   if [ "$LANG" = "python" ]; then
     IMPL_DIR="${PY_IMPL_DIR}"
-    CMD=("$PYTHON" "main.py" "${DATA}")
+    CMD=("${PYTHON}" main.py "${DATA}")
   else
     IMPL_DIR="${CODON_IMPL_DIR}"
     CODON_BIN="${HOME}/.codon/bin/codon"
@@ -64,26 +59,23 @@ run_one() {
   fi
 
   pushd "${IMPL_DIR}"
+
   RUNTIME="$(run_with_timer "${CMD[@]}")"
 
+  # Prefer a real FASTA in ./out or ./
   CONTIGS=""
-  if [ -d out ]; then
-    CONTIGS="$(find_contigs_file out || true)"
-  fi
-  if [ -z "${CONTIGS:-}" ]; then
-    CONTIGS="$(find_contigs_file . || true)"
-  fi
-  if [ -z "${CONTIGS:-}" ]; then
-    echo "WARN: could not find contigs file; deriving N50 from .run.out" >&2
-    CONTIGS=".run.out"
-  fi
-  N50="$(python "${ROOT_DIR}/code/compute_n50.py" "${CONTIGS}")"
+  [ -d out ] && CONTIGS="$(find_contigs_fasta out || true)"
+  [ -z "${CONTIGS}" ] && CONTIGS="$(find_contigs_fasta . || true)"
+  # Fallback to stdout capture if no FASTA
+  [ -z "${CONTIGS}" ] && CONTIGS=".run.out"
+
+  N50="$("${PYTHON}" "${ROOT_DIR}/code/compute_n50.py" "${CONTIGS}")"
   popd
 
   printf '%s\t%s\t%s\t%s\n' "${DATA}" "${LANG}" "${RUNTIME}" "${N50}" >> "${RESULTS_TSV}"
 }
 
-printf '%s\n' "Dataset	Language	Runtime	N50" > "${RESULTS_TSV}"
+printf '%s\n' "Dataset  Language  Runtime N50" > "${RESULTS_TSV}"
 printf '%s\n' "--------------------------------------------------------------------------------" >> "${RESULTS_TSV}"
 
 DATASETS=("data1" "data2" "data3")
