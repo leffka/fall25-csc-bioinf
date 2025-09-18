@@ -69,7 +69,7 @@ run_one() {
   # Fallback to stdout capture if no FASTA
   [ -z "${CONTIGS}" ] && CONTIGS=".run.out"
 
-  N50="$("${PYTHON}" "${ROOT_DIR}/code/compute_n50.py" "${CONTIGS}")"
+  N50="$("${PYTHON}" "${ROOT_DIR}/week1/code/compute_n50.py" "${CONTIGS}")"
   popd
 
   printf '%s\t%s\t%s\t%s\n' "${DATA}" "${LANG}" "${RUNTIME}" "${N50}" >> "${RESULTS_TSV}"
