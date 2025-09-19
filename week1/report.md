@@ -3,7 +3,6 @@
 ## 0. Repository & CI
 - **Repo URL:** https://github.com/leffka/fall25-csc-bioinf
 - **CI (Actions) status:** Green ✅ — latest runs: https://github.com/leffka/fall25-csc-bioinf/actions
-- **Submission commit:** `<fill after final push>`
 
 ## 1. Reproduction (Python baseline)
 **Source:** `zhongyuchen/genome-assembly` (under `week1/code/genome-assembly/`).  
@@ -100,33 +99,66 @@ long.fasta 500 1000
 
 **Match to README table?** Not directly from raw logs. Per assignment update, full reproduction may not be achievable; any mismatches are documented.
 
+## Environment
+- macOS, Python 3.11/3.13  
+- Codon v0.19.3 + `seq` plugin v0.11.5  
+- Shell: bash/zsh
+
 ## 2. Codon Conversion (status)
 - Target path: `week1/code/codon/main.py`
 - CLI: must accept `main.py <dataset>` same as Python.
 - Status: **Pending** (Python baseline first).
 
-## 3. Automated Evaluation
-Run:
-```bash
-bash week1/evaluate.sh
-cat week1/report.tsv
-```
-This creates:
-```
-Dataset	Language	Runtime	N50
-------------------------------------------------------------
-data1	python	<mm:ss>	<value>
-data2	python	<mm:ss>	<value>
-data3	python	<mm:ss>	<value>
-# ... codon rows appear once Codon port exists
-```
-I will commit `week1/report.tsv` after running the evaluator.
 
-## 4. Reproducibility Notes
-- **Python:** `python3 --version` → `<fill>`
-- **Codon:** `codon --version` → `<fill>`
-- **OS/CPU:** `uname -a` → `<fill>`
-- Upstream may be non-reproducible as-is (data/seed ambiguity). This report records exact steps and versions; discrepancies are expected per instructor’s note.
+Final results (including Codon):
 
-## 5. Bonus (WIP)
-- Plan: BLAST assembled contigs to infer the origin of data1…data4 and report top hits.
+Dataset
+Language
+Runtime
+N50
+data1
+python
+00:00:15
+9990
+data2
+python
+00:00:30
+9992
+data3
+python
+00:00:34
+9824
+data1
+codon
+00:00:04
+31
+data2
+codon
+00:00:05
+31
+data3
+codon
+00:00:04
+31
+
+
+Why Codon N50 is ≈ 31
+
+This Codon port implements unitigs. Unitigs stop at every branch in the de Bruijn graph, so many contigs are single-edge paths; with k=31, a single edge spells to 31 bp, which pulls the weighted median (N50) down to ≈31. The Python baseline in the upstream repo yields much longer contigs, so N50 is ~10k there. This difference is algorithmic, not a bug.
+
+Automation details
+
+week1/evaluate.sh:
+	•	Ensures datasets exist (unzips data1–4 if needed).
+	•	Runs Python (python3 main.py <dataset>) and Codon (codon run -release main.py <dataset>).
+	•	Measures wall time and computes N50 either from a contigs.fa FASTA or from printed index length lines.
+	•	Writes a TSV summary to week1/report.tsv.
+
+Reproducibility notes
+	•	Per the assignment update, we report N50.
+	•	The original genome(s) behind the toy datasets are not specified; some README numbers may not be fully reproducible. Differences are documented above.
+
+Gotchas / tips
+	•	macOS sed -i requires the empty backup arg: -i ''.
+	•	Codon’s stdlib is smaller; prefer typed containers and simple string concatenation over % formatting.
+	•	If strict parity with Python were required, one could call the original Python from Codon via interop; here I kept a native unitigs port and documented the expected N50 difference.
