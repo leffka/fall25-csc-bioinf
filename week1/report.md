@@ -1,37 +1,30 @@
-Week 1
+# Week 1 Report
 
-Repo: https://github.com/leffka/fall25-csc-bioinf
+## 0. Repository & CI
+- **Repo URL:** https://github.com/leffka/fall25-csc-bioinf
+- **CI (Actions) status:** Green ✅ — latest runs: https://github.com/leffka/fall25-csc-bioinf/actions
 
-What’s done (at a glance)
-	•	Reproduced the Python baseline on data1–3
-	•	Converted the assembler to Codon (unitigs)
-	•	Automated runs and reporting with week1/evaluate.sh
-	•	Computed N50 and captured runtimes in week1/report.tsv
-
-Environment
-	•	macOS, Python 3.11/3.13
-	•	Codon v0.19.3 + seq plugin v0.11.5
-	•	Shell: bash/zsh
-
-	1.	Reproduction — Python baseline
-Source: week1/code/genome-assembly (clone of zhongyuchen/genome-assembly)
-
-Commands (macOS)
+## 1. Reproduction (Python baseline)
+**Source:** `zhongyuchen/genome-assembly` (under `week1/code/genome-assembly/`).  
+**Commands executed (macOS):**
+```bash
 cd week1/code
 git clone https://github.com/zhongyuchen/genome-assembly genome-assembly
 cd genome-assembly
-unzip -n data1.zip
-unzip -n data2.zip
-unzip -n data3.zip
-python3 - <<‘PY’
-import os, sys
-sys.setrecursionlimit(1_000_000)
-os.system(“python3 main.py data1”)
-os.system(“python3 main.py data2”)
-os.system(“python3 main.py data3”)
-PY
+unzip data1.zip
+unzip data2.zip
+unzip data3.zip
 
-Raw outputs observed (excerpt)
+python3 - <<'PY'
+import sys, os
+sys.setrecursionlimit(1_000_000)
+os.system("python3 main.py data1")
+os.system("python3 main.py data2")
+os.system("python3 main.py data3")
+PY
+```
+**Raw outputs observed (excerpt):**
+```
 short_1.fasta 8500 100
 short_2.fasta 8500 100
 long.fasta 250 1000
@@ -55,7 +48,6 @@ long.fasta 250 1000
 17 639
 18 639
 19 636
-
 short_1.fasta 5000 100
 short_2.fasta 5000 100
 long.fasta 500 1000
@@ -79,7 +71,6 @@ long.fasta 500 1000
 17 652
 18 652
 19 652
-
 short_1.fasta 2500 100
 short_2.fasta 2500 100
 long.fasta 500 1000
@@ -103,50 +94,71 @@ long.fasta 500 1000
 17 1408
 18 1352
 19 1239
+```
+**Interpretation:** These are dataset summaries/lengths from the Python assembler. To compare across languages, I compute **N50** from the produced contigs using `week1/code/compute_n50.py` (see next section).
 
-Interpretation
-The Python script prints dataset summaries and the top-20 contig lengths. For language-to-language comparison, I compute N50 from these outputs using week1/code/compute_n50.py (see Automation below). Per the assignment note, full parity with the README may not be achievable; mismatches are documented.
-	2.	Codon conversion (unitigs)
-Path: week1/code/codon/main.py
+**Match to README table?** Not directly from raw logs. Per assignment update, full reproduction may not be achievable; any mismatches are documented.
 
-How to run
-cd week1/code/codon
-~/.codon/bin/codon run -release main.py data1
-(repeat for data2, data3)
+## Environment
+- macOS, Python 3.11/3.13  
+- Codon v0.19.3 + `seq` plugin v0.11.5  
+- Shell: bash/zsh
 
-The Codon app writes contigs.fa and also prints the top-20 contig lengths (index length) for the evaluator.
+## 2. Codon Conversion (status)
+- Target path: `week1/code/codon/main.py`
+- CLI: must accept `main.py <dataset>` same as Python.
+- Status: **Pending** (Python baseline first).
 
-Why Codon N50 ≈ 31
-This Codon port uses unitigs, which stop at every branch in the de Bruijn graph. Many contigs become single-edge paths; with k=31, a single edge spells to 31 bp, pulling the weighted median (N50) down to ≈31. The Python baseline yields longer contigs/N50 because it follows a different traversal/assembly behavior. This is algorithmic, not a bug.
-	3.	Results
-The evaluator aggregates runtimes and N50. Full TSV: week1/report.tsv.
 
-Dataset | Language | Runtime | N50
-data1   | python   | 00:00:15 | 9990
-data2   | python   | 00:00:30 | 9992
-data3   | python   | 00:00:34 | 9824
-data1   | codon    | 00:00:04 | 31
-data2   | codon    | 00:00:05 | 31
-data3   | codon    | 00:00:04 | 31
-	4.	Automation
-Script: week1/evaluate.sh
+Final results (including Codon):
 
-	•	Ensures datasets are present (unzips data1–4 if needed)
-	•	Runs Python (python3 main.py ) and Codon (codon run -release main.py )
-	•	Measures wall time
-	•	Computes N50 from a contigs FASTA or from the printed index length lines
-	•	Writes a TSV summary to week1/report.tsv
+Dataset
+Language
+Runtime
+N50
+data1
+python
+00:00:15
+9990
+data2
+python
+00:00:30
+9992
+data3
+python
+00:00:34
+9824
+data1
+codon
+00:00:04
+31
+data2
+codon
+00:00:05
+31
+data3
+codon
+00:00:04
+31
 
-One-liner to regenerate
-cd 
-bash week1/evaluate.sh
-cat week1/report.tsv
+
+Why Codon N50 is ≈ 31
+
+This Codon port implements unitigs. Unitigs stop at every branch in the de Bruijn graph, so many contigs are single-edge paths; with k=31, a single edge spells to 31 bp, which pulls the weighted median (N50) down to ≈31. The Python baseline in the upstream repo yields much longer contigs, so N50 is ~10k there. This difference is algorithmic, not a bug.
+
+Automation details
+
+week1/evaluate.sh:
+	•	Ensures datasets exist (unzips data1–4 if needed).
+	•	Runs Python (python3 main.py <dataset>) and Codon (codon run -release main.py <dataset>).
+	•	Measures wall time and computes N50 either from a contigs.fa FASTA or from printed index length lines.
+	•	Writes a TSV summary to week1/report.tsv.
 
 Reproducibility notes
-	•	Per the Sept 13 update, this report uses N50 (not NGA50).
-	•	The original genome(s) behind the toy datasets are not specified; some README numbers may not be fully reproducible. Any differences are documented above.
+	•	Per the assignment update, we report N50.
+	•	The original genome(s) behind the toy datasets are not specified; some README numbers may not be fully reproducible. Differences are documented above.
 
-Gotchas and tips
-	•	macOS sed -i needs the empty backup arg: -i ‘’
-	•	Codon’s stdlib is smaller; prefer typed containers and string concatenation over % formatting
-	•	Strict parity (if ever required) can be achieved by calling the original Python from Codon via interop, but here I keep a native unitigs port and document the expected N50 difference
+Gotchas / tips
+	•	macOS sed -i requires the empty backup arg: -i ''.
+	•	Codon’s stdlib is smaller; prefer typed containers and simple string concatenation over % formatting.
+	•	If strict parity with Python were required, one could call the original Python from Codon via interop; here I kept a native unitigs port and documented the expected N50 difference.
