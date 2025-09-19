@@ -2,7 +2,7 @@ Dataset  Language  Runtime N50
 --------------------------------------------------------------------------------
 data1	python	00:00:15	9990
 data2	python	00:00:30	9992
-data3	python	00:00:35	9824
+data3	python	00:00:34	9824
 data1	codon	00:00:04	31
-data2	codon	00:00:04	31
-data3	codon	00:00:03	31
+data2	codon	00:00:05	31
+data3	codon	00:00:04	31
