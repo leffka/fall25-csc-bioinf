@@ -1,27 +1,71 @@
-name: Github CI
-on: [push]
+name: Week 2 Codon CI
+
+on:
+  push:
+  pull_request:
+
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - run: echo "🐧 Running on ${{ runner.os }} hosted by GitHub."
+      - run: echo "🔎 Branch ${{ github.ref }} | Repo ${{ github.repository }}"
+
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
       - name: Install Codon
         run: |
-          mkdir -p ${HOME}/.codon
-          curl -L https://github.com/exaloop/codon/releases/download/v0.19.3/codon-linux-x86_64.tar.gz | tar zxvf - --strip-components=1 -C ${HOME}/.codon
-          curl -L https://github.com/exaloop/seq/releases/download/v0.11.5/seq-linux-x86_64.tar.gz | tar zxvf - -C ${HOME}/.codon/lib/codon/plugins
-          export PATH=${PATH}:${HOME}/.codon/bin
-      - name: Check out repository code
-        uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
+          mkdir -p "${HOME}/.codon"
+          curl -fsSL https://github.com/exaloop/codon/releases/download/v0.19.3/codon-linux-x86_64.tar.gz \
+            | tar zxvf - --strip-components=1 -C "${HOME}/.codon"
+          # Optional: seq plugin
+          curl -fsSL https://github.com/exaloop/seq/releases/download/v0.11.5/seq-linux-x86_64.tar.gz \
+            | tar zxvf - -C "${HOME}/.codon/lib/codon/plugins"
+          echo "${HOME}/.codon/bin" >> "$GITHUB_PATH"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
-      - name: Set up Codon Python bridge
+          python-version: '3.11'
+
+      - name: Install Python deps & configure Codon interop
         run: |
-          pip install find_libpython
-          echo "CODON_PYTHON=$(find_libpython)" >> $GITHUB_ENV
-          echo "Found Python at: $(find_libpython)"
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+          python -m pip install --upgrade pip
+          python -m pip install pillow find_libpython
+          # CODON_PYTHON -> libpython path
+          echo "CODON_PYTHON=$(python - <<'PY'
+import find_libpython
+print(find_libpython.find_libpython())
+PY
+)" >> "$GITHUB_ENV"
+          # PYTHONPATH -> site-packages (for PIL)
+          echo "PYTHONPATH=$(python - <<'PY'
+import site
+paths = []
+try:
+    paths = site.getsitepackages()
+except Exception:
+    pass
+if not paths:
+    try:
+        paths = [site.getusersitepackages()]
+    except Exception:
+        paths = []
+print(paths[0] if paths else "")
+PY
+)" >> "$GITHUB_ENV"
+
+      - name: Verify environment
+        run: |
+          codon --version
+          python -c "import PIL, PIL.Image, PIL.ImageDraw, PIL.ImageFont; print('Pillow OK:', PIL.__version__)"
+          echo "CODON_PYTHON=$CODON_PYTHON"
+          echo "PYTHONPATH=$PYTHONPATH"
+
+      - name: Make evaluate.sh executable
+        run: chmod +x week2/evaluate.sh
+
+      - name: Run Week 2 tests
+        run: bash week2/evaluate.sh
