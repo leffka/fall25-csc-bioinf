@@ -36,14 +36,14 @@ jobs:
           python -m pip install pillow find_libpython
           # CODON_PYTHON -> libpython path
           echo "CODON_PYTHON=$(python - <<'PY'
-import find_libpython
-print(find_libpython.find_libpython())
-PY
-)" >> "$GITHUB_ENV"
+          import find_libpython
+          print(find_libpython.find_libpython())
+          PY
+          )" >> "$GITHUB_ENV"
           # PYTHONPATH -> site-packages (for PIL)
           echo "PYTHONPATH=$(python - <<'PY'
-import site
-paths = []
+          import site
+          paths = []
 try:
     paths = site.getsitepackages()
 except Exception:
