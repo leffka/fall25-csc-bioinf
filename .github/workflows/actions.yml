@@ -53,9 +53,9 @@ if not paths:
         paths = [site.getusersitepackages()]
     except Exception:
         paths = []
-print(paths[0] if paths else "")
-PY
-)" >> "$GITHUB_ENV"
+        print(paths[0] if paths else "")
+        PY
+        )" >> "$GITHUB_ENV"
 
       - name: Verify environment
         run: |
