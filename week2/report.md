@@ -63,6 +63,7 @@ GitHub Actions workflow:
 	•	Avoid os.path, pathlib, subprocess in Codon code.
 	•	Replace T | None with Optional[T] in annotations.
 	•	Codon’s import base = executed file’s folder; run from week2/ (or use a small runner) so trviz is visible.
+	•	Utilize Piazza.
 
 ⸻
 
@@ -71,3 +72,6 @@ GitHub Actions workflow:
 	•	Shell: bash/zsh
 	•	Python: 3.11
 	•	Codon: v0.19.3
+
+
+Time to finish: about 24 hours...
