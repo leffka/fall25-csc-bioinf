@@ -16,6 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Codon
+        shell: bash
         run: |
           mkdir -p "${HOME}/.codon"
           curl -fsSL https://github.com/exaloop/codon/releases/download/v0.19.3/codon-linux-x86_64.tar.gz \
@@ -31,33 +32,17 @@ jobs:
           python-version: '3.11'
 
       - name: Install Python deps & configure Codon interop
+        shell: bash
         run: |
           python -m pip install --upgrade pip
           python -m pip install pillow find_libpython
-          # CODON_PYTHON -> libpython path
-          echo "CODON_PYTHON=$(python - <<'PY'
-          import find_libpython
-          print(find_libpython.find_libpython())
-          PY
-          )" >> "$GITHUB_ENV"
-          # PYTHONPATH -> site-packages (for PIL)
-          echo "PYTHONPATH=$(python - <<'PY'
-          import site
-          paths = []
-try:
-    paths = site.getsitepackages()
-except Exception:
-    pass
-if not paths:
-    try:
-        paths = [site.getusersitepackages()]
-    except Exception:
-        paths = []
-        print(paths[0] if paths else "")
-        PY
-        )" >> "$GITHUB_ENV"
+          # CODON_PYTHON -> path to libpython
+          echo "CODON_PYTHON=$(python -c 'import find_libpython as f; print(f.find_libpython())')" >> "$GITHUB_ENV"
+          # PYTHONPATH -> directory that contains the PIL package
+          echo "PYTHONPATH=$(python -c 'import PIL, os; print(os.path.dirname(PIL.__file__))')" >> "$GITHUB_ENV"
 
       - name: Verify environment
+        shell: bash
         run: |
           codon --version
           python -c "import PIL, PIL.Image, PIL.ImageDraw, PIL.ImageFont; print('Pillow OK:', PIL.__version__)"
