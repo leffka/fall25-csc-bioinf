@@ -1,4 +1,4 @@
-name: Week 2 Codon CI
+name: Week 4 Codon CI
 
 on:
   push:
@@ -38,7 +38,7 @@ jobs:
           python -m pip install pillow find_libpython
           # CODON_PYTHON -> path to libpython
           echo "CODON_PYTHON=$(python -c 'import find_libpython as f; print(f.find_libpython())')" >> "$GITHUB_ENV"
-          # PYTHONPATH -> directory that contains the PIL package
+          # PYTHONPATH -> directory that contains the PIL package (evaluate.sh will prepend week4/)
           echo "PYTHONPATH=$(python -c 'import PIL, os; print(os.path.dirname(PIL.__file__))')" >> "$GITHUB_ENV"
 
       - name: Verify environment
@@ -50,7 +50,8 @@ jobs:
           echo "PYTHONPATH=$PYTHONPATH"
 
       - name: Make evaluate.sh executable
-        run: chmod +x week2/evaluate.sh
+        run: chmod +x week4/evaluate.sh
 
-      - name: Run Week 2 tests
-        run: bash week2/evaluate.sh
+      - name: Run Week 4 tests
+        working-directory: week4
+        run: ./evaluate.sh
