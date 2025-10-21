@@ -1,0 +1,113 @@
+# Local Alignment Algorithm for Codon
+
+# Return six values: (score, q_start, t_start, q_end, t_end, cigar)
+def local_align(query: list[int], target: list[int], mat: list[int], gapo: int, gape: int) -> tuple[int,int,int,int,int,list[tuple[int,str]]]:
+    """
+    Local alignment algorithm.
+
+    Args:
+        query: Query sequence as list of integers
+        target: Target sequence as list of integers
+        mat: Scoring matrix (square matrix flattened)
+        gapo: Gap opening penalty
+        gape: Gap extension penalty
+
+    Returns:
+        (alignment_score, q_start, t_start, q_end, t_end, CIGAR)
+    """
+    qlen: int = len(query)
+    tlen: int = len(target)
+    m: int = int(len(mat) ** 0.5)
+    gapoe: int = gapo + gape
+
+    dp: list[list[int]] = [[0] * (tlen + 1) for _ in range(qlen + 1)]
+    tb: list[list[int]] = [[0] * (tlen + 1) for _ in range(qlen + 1)]  # 0=M,1=I,2=D,-1=reset
+
+    max_score: int = 0
+    max_i: int = 0
+    max_j: int = 0
+
+    for i in range(1, qlen + 1):
+        for j in range(1, tlen + 1):
+            match_score: int  = dp[i - 1][j - 1] + mat[query[i - 1] * m + target[j - 1]]
+            insert_score: int = dp[i - 1][j] - gapoe - gape  # (kept as in your code)
+            delete_score: int = dp[i][j - 1] - gapoe - gape
+
+            if match_score >= insert_score and match_score >= delete_score and match_score > 0:
+                dp[i][j] = match_score
+                tb[i][j] = 0
+            elif insert_score >= delete_score and insert_score > 0:
+                dp[i][j] = insert_score
+                tb[i][j] = 1
+            elif delete_score > 0:
+                dp[i][j] = delete_score
+                tb[i][j] = 2
+            else:
+                dp[i][j] = 0
+                tb[i][j] = -1
+
+            if dp[i][j] > max_score:
+                max_score = dp[i][j]
+                max_i = i
+                max_j = j
+
+    # Traceback from the best cell
+    cigar_steps: list[tuple[int,int]] = []  # (op, len), op: 0=M,1=I,2=D
+    i: int = max_i
+    j: int = max_j
+    while i > 0 and j > 0:
+        op: int = tb[i][j]
+        if op == -1:
+            break
+        if op == 0:
+            cigar_steps.append((0, 1)); i -= 1; j -= 1
+        elif op == 1:
+            cigar_steps.append((1, 1)); i -= 1
+        else:
+            cigar_steps.append((2, 1)); j -= 1
+
+    q_start: int = i
+    t_start: int = j
+    q_end: int = max_i
+    t_end: int = max_j
+
+    # Compress CIGAR
+    cigar_comp: list[tuple[int,int]] = []
+    for op, cnt in reversed(cigar_steps):
+        if cigar_comp and cigar_comp[-1][0] == op:
+            prev_op, prev_cnt = cigar_comp[-1]
+            cigar_comp[-1] = (prev_op, prev_cnt + cnt)
+        else:
+            cigar_comp.append((op, cnt))
+
+    ops: str = "MID"
+    cigar: list[tuple[int,str]] = [(length, ops[op]) for op, length in cigar_comp]
+
+    return max_score, q_start, t_start, q_end, t_end, cigar
+
+
+def main():
+    # Simple smoke test (not used by your FASTA test, but keep it correct)
+    query: list[int]  = [0,1,2,3,0,1,2,3]
+    target: list[int] = [0,1,2,3,2,1,2,3]
+    mat: list[int] = [ 2,-1,-1,-1,
+                      -1, 2,-1,-1,
+                      -1,-1, 2,-1,
+                      -1,-1,-1, 2 ]
+    gapo: int = 5
+    gape: int = 1
+
+    score: int
+    q_start: int
+    t_start: int
+    q_end: int
+    t_end: int
+    cigar: list[tuple[int,str]]
+    score, q_start, t_start, q_end, t_end, cigar = local_align(query, target, mat, gapo, gape)
+
+    print("--- Codon Local Alignment ---")
+    print(f"Score: {score}")
+    print(f"Query Range: {q_start} - {q_end}")
+    print(f"Target Range: {t_start} - {t_end}")
+    cigar_str: str = ''.join([f'{length}{op}' for length, op in cigar])
+    print(f"CIGAR: {cigar_str}")
