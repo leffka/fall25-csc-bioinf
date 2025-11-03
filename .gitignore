@@ -9,3 +9,4 @@ week1/code/codon/contigs.fa
 **/.DS_Store
 # Wrong place
 /report.tsv
+**/.ipynb_checkpoints/
