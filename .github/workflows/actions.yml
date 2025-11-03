@@ -1,57 +1,49 @@
-name: Week 4 Codon CI
+name: Week 5 notebook
 
 on:
   push:
+    paths:
+      - "week5/**"
+      - ".github/workflows/week5.yml"
   pull_request:
+    paths:
+      - "week5/**"
+      - ".github/workflows/week5.yml"
 
 jobs:
-  test:
+  week5:
     runs-on: ubuntu-latest
-    steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 Running on ${{ runner.os }} hosted by GitHub."
-      - run: echo "🔎 Branch ${{ github.ref }} | Repo ${{ github.repository }}"
 
-      - name: Check out repository code
+    steps:
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install Codon
-        shell: bash
-        run: |
-          mkdir -p "${HOME}/.codon"
-          curl -fsSL https://github.com/exaloop/codon/releases/download/v0.19.3/codon-linux-x86_64.tar.gz \
-            | tar zxvf - --strip-components=1 -C "${HOME}/.codon"
-          # Optional: seq plugin
-          curl -fsSL https://github.com/exaloop/seq/releases/download/v0.11.5/seq-linux-x86_64.tar.gz \
-            | tar zxvf - -C "${HOME}/.codon/lib/codon/plugins"
-          echo "${HOME}/.codon/bin" >> "$GITHUB_PATH"
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up Miniforge (conda/mamba)
+        uses: conda-incubator/setup-miniconda@v3
         with:
-          python-version: '3.11'
+          miniforge-version: latest
+          use-mamba: true
+          activate-environment: week5-bio
+          python-version: 3.11
 
-      - name: Install Python deps & configure Codon interop
-        shell: bash
+      - name: Install bioinformatics tools
+        shell: bash -l {0}
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install pillow find_libpython
-          # CODON_PYTHON -> path to libpython
-          echo "CODON_PYTHON=$(python -c 'import find_libpython as f; print(f.find_libpython())')" >> "$GITHUB_ENV"
-          # PYTHONPATH -> directory that contains the PIL package (evaluate.sh will prepend week4/)
-          echo "PYTHONPATH=$(python -c 'import PIL, os; print(os.path.dirname(PIL.__file__))')" >> "$GITHUB_ENV"
+          mamba install -y -c conda-forge -c bioconda \
+            jupyterlab nbconvert \
+            minimap2 samtools bcftools htslib seqkit whatshap
 
-      - name: Verify environment
-        shell: bash
+      - name: Run week5 notebook
+        shell: bash -l {0}
         run: |
-          codon --version
-          python -c "import PIL, PIL.Image, PIL.ImageDraw, PIL.ImageFont; print('Pillow OK:', PIL.__version__)"
-          echo "CODON_PYTHON=$CODON_PYTHON"
-          echo "PYTHONPATH=$PYTHONPATH"
+          jupyter nbconvert \
+            --to notebook \
+            --execute week5/week5.ipynb \
+            --output week5_executed.ipynb \
+            --ExecutePreprocessor.timeout=0
 
-      - name: Make evaluate.sh executable
-        run: chmod +x week4/evaluate.sh
-
-      - name: Run Week 4 tests
-        working-directory: week4
-        run: ./evaluate.sh
+      - name: List outputs (debug)
+        shell: bash -l {0}
+        run: |
+          ls -R
+          ls -lh week5
