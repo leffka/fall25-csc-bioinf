@@ -1,18 +1,21 @@
-name: Week 5 notebook
+name: Week 6 Notebook
 
 on:
   push:
     paths:
-      - "week5/**"
-      - ".github/workflows/week5.yml"
+      - "week6/**"
+      - ".github/workflows/week6.yml"
   pull_request:
     paths:
-      - "week5/**"
-      - ".github/workflows/week5.yml"
+      - "week6/**"
+      - ".github/workflows/week6.yml"
 
 jobs:
-  week5:
+  week6:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0} # specific shell for conda
 
     steps:
       - name: Checkout repo
@@ -23,27 +26,30 @@ jobs:
         with:
           miniforge-version: latest
           use-mamba: true
-          activate-environment: week5-bio
+          activate-environment: week6-bio
           python-version: 3.11
 
       - name: Install bioinformatics tools
-        shell: bash -l {0}
         run: |
+          # Install Core Bio tools and Scanpy ecosystem
           mamba install -y -c conda-forge -c bioconda \
             jupyterlab nbconvert \
-            minimap2 samtools bcftools htslib seqkit whatshap
+            salmon alevin-fry \
+            scanpy python-igraph leidenalg \
+            pandas matplotlib
+          
+          # CellTypist is best installed via pip to avoid dependency conflicts
+          pip install celltypist
 
-      - name: Run week5 notebook
-        shell: bash -l {0}
+      - name: Run week6 notebook
         run: |
           jupyter nbconvert \
             --to notebook \
-            --execute week5/week5.ipynb \
-            --output week5_executed.ipynb \
-            --ExecutePreprocessor.timeout=0
+            --execute week6/week6.ipynb \
+            --output week6_executed.ipynb \
+            --ExecutePreprocessor.timeout=600 
+            # Timeout increased to 600s (10 mins) as SC analysis can be slow
 
       - name: List outputs (debug)
-        shell: bash -l {0}
         run: |
-          ls -R
-          ls -lh week5
+          ls -R week6
