@@ -2,8 +2,6 @@ CSC 427 Bioinformatics Project Report, 2025
 
 **Reproduction of Kallisto: Near-Optimal Probabilistic RNA-seq Quantification**
 
-Lev Chshemelinin
-
 **ABSTRACT**
 Kallisto is a tool used to quantify RNA-seq transcript abundances using pseudoalignment, a novel approach that achieves near-optimal accuracy in orders of magnitude less time than traditional alignment-based methods (1). The original paper claimed processing of 30 million reads in under 10 minutes with accuracy comparable to alignment-based tools (Spearman p ≈ 0.97-0.99). In my reproduction, I try to reproduce these claims using the same GEUVADIS dataset and GENCODE transcriptome from the original study. I wasn’t able to fully validate kallisto's speed advantage (34 minutes for 32M reads with 100 bootstraps) and accuracy (p = 0.844 using Polyester simulation) on my setup. While my accuracy is slightly lower than the original paper due to using a simplified simulation method (Polyester instead of RSEM), the results confirm that kallisto still provides fast and accurate transcript quantification suitable for modern RNA-seq analysis.
 
