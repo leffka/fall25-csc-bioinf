@@ -1,0 +1,116 @@
+Assuming unrestricted shared filesystem usage.
+host: Levs-MacBook-Pro.local
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                   count
+------------------  -------
+accuracy_eval             1
+all                       1
+bootstrap_summary         1
+fetch_reads               1
+fetch_transcripts         1
+index_kallisto            1
+index_salmon              1
+quant_kallisto            1
+quant_kallisto_sim        1
+quant_salmon              1
+simulate_reads            1
+total                    11
+
+Select jobs to execute...
+Failed to solve scheduling problem with ILP solver, falling back to greedy scheduler. You likely have to fix your ILP solver installation. Error message: PULP_CBC_CMD: Not Available (check permissions on cbc)
+Execute 1 jobs...
+[Tue Nov 25 19:24:04 2025]
+localrule fetch_reads:
+    output: data/test_R1.fastq.gz, data/test_R2.fastq.gz
+    jobid: 5
+    reason: Missing output files: data/test_R2.fastq.gz, data/test_R1.fastq.gz
+    resources: tmpdir=/var/folders/lc/hdfzk19x5fjdql_sy2ryg3f00000gn/T
+Shell command: 
+            mkdir -p data
+            curl -L https://raw.githubusercontent.com/pachterlab/kallisto/master/test/reads_1.fastq.gz -o data/test_R1.fastq.gz
+            curl -L https://raw.githubusercontent.com/pachterlab/kallisto/master/test/reads_2.fastq.gz -o data/test_R2.fastq.gz
+            
+Select jobs to execute...
+[Tue Nov 25 19:24:30 2025]
+Finished jobid: 5 (Rule: fetch_reads)
+1 of 11 steps (9%) done
+Execute 1 jobs...
+[Tue Nov 25 19:24:30 2025]
+localrule fetch_transcripts:
+    output: ref/test_transcripts.fa.gz
+    jobid: 2
+    reason: Missing output files: ref/test_transcripts.fa.gz
+    resources: tmpdir=/var/folders/lc/hdfzk19x5fjdql_sy2ryg3f00000gn/T
+Shell command: 
+            mkdir -p ref
+            curl -L https://raw.githubusercontent.com/pachterlab/kallisto/master/test/transcripts.fasta.gz -o ref/test_transcripts.fa.gz
+            
+[Tue Nov 25 19:24:30 2025]
+Finished jobid: 2 (Rule: fetch_transcripts)
+2 of 11 steps (18%) done
+Select jobs to execute...
+Execute 2 jobs...
+[Tue Nov 25 19:24:30 2025]
+localrule index_kallisto:
+    input: ref/test_transcripts.fa.gz
+    output: index/kallisto.idx
+    jobid: 1
+    reason: Missing output files: index/kallisto.idx; Input files updated by another job: ref/test_transcripts.fa.gz
+    resources: tmpdir=/var/folders/lc/hdfzk19x5fjdql_sy2ryg3f00000gn/T
+Shell command: 
+        mkdir -p index
+        kallisto index -i index/kallisto.idx ref/test_transcripts.fa.gz
+        
+[Tue Nov 25 19:24:30 2025]
+localrule simulate_reads:
+    input: ref/test_transcripts.fa.gz
+    output: data/sim/reads_1.fq.gz, data/sim/reads_2.fq.gz, data/sim/truth_tpm.tsv
+    jobid: 9
+    reason: Missing output files: data/sim/reads_1.fq.gz, data/sim/reads_2.fq.gz, data/sim/truth_tpm.tsv; Input files updated by another job: ref/test_transcripts.fa.gz
+    resources: tmpdir=/var/folders/lc/hdfzk19x5fjdql_sy2ryg3f00000gn/T
+Shell command: 
+        mkdir -p data/sim
+        Rscript scripts/simulate_polyester.R           --transcripts ref/test_transcripts.fa.gz --outdir data/sim           --n_transcripts 2000 --n_reads 500000           --read_len 100 --frag_mean 200 --frag_sd 30           --seed 42
+        
+Select jobs to execute...
+RuleException:
+CalledProcessError in file "/Users/lev/antigravity-fall25csc427/fall25-csc-bioinf/project/project-kallisto-full/Snakefile", line 166:
+Command 'set -euo pipefail;  
+        mkdir -p data/sim
+        Rscript scripts/simulate_polyester.R           --transcripts ref/test_transcripts.fa.gz --outdir data/sim           --n_transcripts 2000 --n_reads 500000           --read_len 100 --frag_mean 200 --frag_sd 30           --seed 42' returned non-zero exit status 1.
+[Tue Nov 25 19:24:32 2025]
+Error in rule simulate_reads:
+    message: None
+    jobid: 9
+    input: ref/test_transcripts.fa.gz
+    output: data/sim/reads_1.fq.gz, data/sim/reads_2.fq.gz, data/sim/truth_tpm.tsv
+    shell:
+        
+        mkdir -p data/sim
+        Rscript scripts/simulate_polyester.R           --transcripts ref/test_transcripts.fa.gz --outdir data/sim           --n_transcripts 2000 --n_reads 500000           --read_len 100 --frag_mean 200 --frag_sd 30           --seed 42
+        
+        (command exited with non-zero exit code)
+[Tue Nov 25 19:24:32 2025]
+Finished jobid: 1 (Rule: index_kallisto)
+3 of 11 steps (27%) done
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look below for error messages
+[Tue Nov 25 19:24:32 2025]
+Error in rule simulate_reads:
+    message: None
+    jobid: 9
+    input: ref/test_transcripts.fa.gz
+    output: data/sim/reads_1.fq.gz, data/sim/reads_2.fq.gz, data/sim/truth_tpm.tsv
+    shell:
+        
+        mkdir -p data/sim
+        Rscript scripts/simulate_polyester.R           --transcripts ref/test_transcripts.fa.gz --outdir data/sim           --n_transcripts 2000 --n_reads 500000           --read_len 100 --frag_mean 200 --frag_sd 30           --seed 42
+        
+        (command exited with non-zero exit code)
+Complete log(s): /Users/lev/antigravity-fall25csc427/fall25-csc-bioinf/project/project-kallisto-full/.snakemake/log/2025-11-25T192404.682956.snakemake.log
+WorkflowError:
+At least one job did not complete successfully.

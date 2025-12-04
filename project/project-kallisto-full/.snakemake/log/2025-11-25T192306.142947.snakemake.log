@@ -1,0 +1,35 @@
+Assuming unrestricted shared filesystem usage.
+host: Levs-MacBook-Pro.local
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                   count
+------------------  -------
+accuracy_eval             1
+all                       1
+bootstrap_summary         1
+fetch_reads               1
+fetch_transcripts         1
+index_kallisto            1
+index_salmon              1
+quant_kallisto            1
+quant_kallisto_sim        1
+quant_salmon              1
+simulate_reads            1
+total                    11
+
+Select jobs to execute...
+Failed to solve scheduling problem with ILP solver, falling back to greedy scheduler. You likely have to fix your ILP solver installation. Error message: PULP_CBC_CMD: Not Available (check permissions on cbc)
+Execute 1 jobs...
+RuleException in rule fetch_transcripts in file "/Users/lev/antigravity-fall25csc427/fall25-csc-bioinf/project/project-kallisto-full/Snakefile", line 29:
+NameError: The name 'str(cfg' is unknown in this context. Please make sure that you defined that variable. Also note that braces not used for variable access have to be escaped by repeating them, i.e. {{print $1}}, when formatting the following:
+
+        mkdir -p ref
+        if {str(cfg["use_test_data"]).lower()} == "true"; then
+          curl -L {cfg["test_transcripts_url"]} -o {output}
+        else
+          curl -L {cfg["transcript_fasta_url"]} -o {output}
+        fi
+        

@@ -1,0 +1,8 @@
+Assuming unrestricted shared filesystem usage.
+host: Levs-MacBook-Pro.local
+Building DAG of jobs...
+MissingInputException in rule all in file "/Users/lev/antigravity-fall25csc427/fall25-csc-bioinf/project/project-kallisto-full/Snakefile", line 17:
+Missing input files for rule all:
+    affected files:
+        results/speed/kallisto_runtime.txt
+        results/speed/salmon_runtime.txt

@@ -1,0 +1,210 @@
+import os
+configfile: "config.yaml"
+cfg = config
+
+REF_FA = "ref/test_transcripts.fa.gz" if cfg["use_test_data"] else "ref/transcripts.fa.gz"
+KALLISTO_IDX = "index/kallisto.idx"
+SALMON_IDX_DIR = "index/salmon"
+SAMPLES = ["test"] if cfg["use_test_data"] else list(cfg["samples"].keys())
+
+def reads_paths(sample):
+    if cfg["use_test_data"]:
+        return ("data/test_R1.fastq.gz", "data/test_R2.fastq.gz")
+    else:
+        s = cfg["samples"][sample]
+        return (f"data/{sample}_R1.fastq.gz", f"data/{sample}_R2.fastq.gz")
+
+rule all:
+    input:
+        KALLISTO_IDX,
+        f"{SALMON_IDX_DIR}/versionInfo.json",
+        expand("quant/kallisto/{s}/abundance.tsv", s=SAMPLES),
+        expand("quant/salmon/{s}/quant.sf", s=SAMPLES),
+        expand("results/speed/kallisto_{s}.time", s=SAMPLES),
+        expand("results/speed/salmon_{s}.time", s=SAMPLES),
+        "results/bootstrap/summary_demo.tsv",
+        "results/accuracy_simulated/metrics.tsv",
+        "results/accuracy_simulated/ma_plot.png"
+
+if cfg["use_test_data"]:
+    rule fetch_transcripts:
+        output: REF_FA
+        params:
+            url = cfg["test_transcripts_url"]
+        shell:
+            """
+            mkdir -p ref
+            curl -L {params.url} -o {output}
+            """
+else:
+    rule fetch_transcripts:
+        output: REF_FA
+        params:
+            url = cfg["transcript_fasta_url"]
+        shell:
+            """
+            mkdir -p ref
+            curl -L {params.url} -o {output}
+            """
+
+if cfg["use_test_data"]:
+    rule fetch_reads:
+        output:
+            "data/test_R1.fastq.gz",
+            "data/test_R2.fastq.gz"
+        params:
+            r1 = cfg["test_reads_1_url"],
+            r2 = cfg["test_reads_2_url"]
+        shell:
+            """
+            mkdir -p data
+            curl -L {params.r1} -o {output[0]}
+            curl -L {params.r2} -o {output[1]}
+            """
+else:
+    rule fetch_reads:
+        output:
+            "data/{s}_R1.fastq.gz",
+            "data/{s}_R2.fastq.gz"
+        params:
+            r1 = lambda wildcards: cfg["samples"][wildcards.s]["r1"],
+            r2 = lambda wildcards: cfg["samples"][wildcards.s]["r2"]
+        shell:
+            """
+            mkdir -p data
+            curl -L -C - --retry 5 --retry-delay 10 {params.r1} -o {output[0]}
+            curl -L -C - --retry 5 --retry-delay 10 {params.r2} -o {output[1]}
+            """
+
+rule index_kallisto:
+    input: REF_FA
+    output: KALLISTO_IDX
+    params: k = cfg["kallisto"]["k"]
+    shell:
+        """
+        mkdir -p index
+        kallisto index -i {output} {input}
+        """
+
+rule index_salmon:
+    input: REF_FA
+    output: f"{SALMON_IDX_DIR}/versionInfo.json"
+    shell:
+        """
+        mkdir -p {SALMON_IDX_DIR}
+        salmon index -t {input} -i {SALMON_IDX_DIR} -k 31
+        """
+
+rule quant_kallisto:
+    input:
+        idx = KALLISTO_IDX,
+        r = lambda wildcards: reads_paths(wildcards.s)
+    output:
+        tsv = "quant/kallisto/{s}/abundance.tsv",
+        runinfo = "quant/kallisto/{s}/run_info.json",
+        time = "results/speed/kallisto_{s}.time"
+    params:
+        bs = cfg["kallisto"]["bootstraps"],
+        th = cfg["kallisto"]["threads"]
+    shell:
+        """
+        r1="{input.r[0]}"
+        r2="{input.r[1]}"
+        mkdir -p quant/kallisto/{wildcards.s} results/speed
+        (time kallisto quant -i {input.idx} -o quant/kallisto/{wildcards.s} \
+          -b {params.bs} -t {params.th} $r1 $r2) \
+          > {output.time} 2>&1
+        """
+
+rule quant_salmon:
+    input:
+        idx_info = f"{SALMON_IDX_DIR}/versionInfo.json",
+        r = lambda wildcards: reads_paths(wildcards.s)
+    output:
+        sf = "quant/salmon/{s}/quant.sf",
+        time = "results/speed/salmon_{s}.time"
+    params:
+        th = cfg["salmon"]["threads"]
+    shell:
+        """
+        r1="{input.r[0]}"
+        r2="{input.r[1]}"
+        mkdir -p quant/salmon/{wildcards.s} results/speed
+        (time salmon quant -i {SALMON_IDX_DIR} -l A -1 $r1 -2 $r2 -p {params.th} \
+          -o quant/salmon/{wildcards.s}) \
+          > {output.time} 2>&1
+        """
+
+rule bootstrap_summary:
+    input:
+        "quant/kallisto/test/abundance.tsv" if cfg["use_test_data"] else expand("quant/kallisto/{s}/abundance.tsv", s=SAMPLES)
+    output:
+        "results/bootstrap/summary_demo.tsv"
+    shell:
+        """
+        python scripts/plot_bootstrap.py \
+          --runinfo quant/kallisto/{S}/run_info.json \
+          --abundance quant/kallisto/{S}/abundance.tsv \
+          --outdir results/bootstrap \
+          --tag summary_demo
+        """.replace("{S}", "test" if cfg["use_test_data"] else SAMPLES[0])
+
+import sys
+import os
+
+# Ensure we use the Rscript from the current conda environment
+RSCRIPT = os.path.join(os.path.dirname(sys.executable), "Rscript")
+
+rule simulate_reads:
+    input:
+        REF_FA
+    output:
+        "data/sim/reads_1.fq.gz",
+        "data/sim/reads_2.fq.gz",
+        "data/sim/truth_tpm.tsv"
+    params:
+        n_tx = cfg["simulation"]["n_transcripts"],
+        n_reads = cfg["simulation"]["n_reads_per_sample"],
+        read_len = cfg["simulation"]["read_len"],
+        frag_mean = cfg["simulation"]["frag_mean"],
+        frag_sd = cfg["simulation"]["frag_sd"],
+        seed = cfg["simulation"]["seed"],
+        paired = str(cfg["simulation"]["paired"]).upper()
+    shell:
+        """
+        mkdir -p data/sim
+        {RSCRIPT} scripts/simulate_polyester.R \
+          --transcripts {input} --outdir data/sim \
+          --n_transcripts {params.n_tx} --n_reads {params.n_reads} \
+          --read_len {params.read_len} --frag_mean {params.frag_mean} --frag_sd {params.frag_sd} \
+          --seed {params.seed}
+        """
+
+rule quant_kallisto_sim:
+    input:
+        idx = KALLISTO_IDX,
+        r1 = "data/sim/reads_1.fq.gz",
+        r2 = "data/sim/reads_2.fq.gz"
+    output:
+        "quant/kallisto_sim/abundance.tsv"
+    params:
+        th = cfg["kallisto"]["threads"]
+    shell:
+        """
+        mkdir -p quant/kallisto_sim
+        kallisto quant -i {input.idx} -o quant/kallisto_sim -t {params.th} {input.r1} {input.r2}
+        """
+
+rule accuracy_eval:
+    input:
+        truth = "data/sim/truth_tpm.tsv",
+        est = "quant/kallisto_sim/abundance.tsv"
+    output:
+        "results/accuracy_simulated/metrics.tsv",
+        "results/accuracy_simulated/ma_plot.png"
+    shell:
+        """
+        python scripts/compare_quant.py \
+          --truth {input.truth} --abundance {input.est} \
+          --outdir results/accuracy_simulated
+        """

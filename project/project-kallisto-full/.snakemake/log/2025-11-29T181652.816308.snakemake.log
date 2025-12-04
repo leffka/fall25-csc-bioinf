@@ -1,0 +1,75 @@
+Assuming unrestricted shared filesystem usage.
+host: Levs-MacBook-Pro.local
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                   count
+------------------  -------
+accuracy_eval             1
+all                       1
+bootstrap_summary         1
+fetch_reads               1
+fetch_transcripts         1
+index_kallisto            1
+index_salmon              1
+quant_kallisto            1
+quant_kallisto_sim        1
+quant_salmon              1
+simulate_reads            1
+total                    11
+
+Select jobs to execute...
+Failed to solve scheduling problem with ILP solver, falling back to greedy scheduler. You likely have to fix your ILP solver installation. Error message: PULP_CBC_CMD: Not Available (check permissions on cbc)
+Execute 1 jobs...
+[Sat Nov 29 18:16:53 2025]
+localrule fetch_reads:
+    output: data/NA12716_R1.fastq.gz, data/NA12716_R2.fastq.gz
+    jobid: 5
+    reason: Forced execution
+    wildcards: s=NA12716
+    resources: tmpdir=/var/folders/lc/hdfzk19x5fjdql_sy2ryg3f00000gn/T
+Shell command: 
+            mkdir -p data
+            curl -L ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR188/ERR188021/ERR188021_1.fastq.gz -o data/NA12716_R1.fastq.gz
+            curl -L ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR188/ERR188021/ERR188021_2.fastq.gz -o data/NA12716_R2.fastq.gz
+            
+Select jobs to execute...
+RuleException:
+CalledProcessError in file "/Users/lev/antigravity-fall25csc427/fall25-csc-bioinf/project/project-kallisto-full/Snakefile", line 73:
+Command 'set -euo pipefail;  
+            mkdir -p data
+            curl -L ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR188/ERR188021/ERR188021_1.fastq.gz -o data/NA12716_R1.fastq.gz
+            curl -L ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR188/ERR188021/ERR188021_2.fastq.gz -o data/NA12716_R2.fastq.gz' returned non-zero exit status 18.
+[Sat Nov 29 18:29:11 2025]
+Error in rule fetch_reads:
+    message: None
+    jobid: 5
+    output: data/NA12716_R1.fastq.gz, data/NA12716_R2.fastq.gz
+    shell:
+        
+            mkdir -p data
+            curl -L ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR188/ERR188021/ERR188021_1.fastq.gz -o data/NA12716_R1.fastq.gz
+            curl -L ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR188/ERR188021/ERR188021_2.fastq.gz -o data/NA12716_R2.fastq.gz
+            
+        (command exited with non-zero exit code)
+Removing output files of failed job fetch_reads since they might be corrupted:
+data/NA12716_R1.fastq.gz, data/NA12716_R2.fastq.gz
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look below for error messages
+[Sat Nov 29 18:29:12 2025]
+Error in rule fetch_reads:
+    message: None
+    jobid: 5
+    output: data/NA12716_R1.fastq.gz, data/NA12716_R2.fastq.gz
+    shell:
+        
+            mkdir -p data
+            curl -L ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR188/ERR188021/ERR188021_1.fastq.gz -o data/NA12716_R1.fastq.gz
+            curl -L ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR188/ERR188021/ERR188021_2.fastq.gz -o data/NA12716_R2.fastq.gz
+            
+        (command exited with non-zero exit code)
+Complete log(s): /Users/lev/antigravity-fall25csc427/fall25-csc-bioinf/project/project-kallisto-full/.snakemake/log/2025-11-29T181652.816308.snakemake.log
+WorkflowError:
+At least one job did not complete successfully.

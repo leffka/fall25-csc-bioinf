@@ -1,0 +1,122 @@
+Assuming unrestricted shared filesystem usage.
+host: Levs-MacBook-Pro.local
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                   count
+------------------  -------
+accuracy_eval             1
+all                       1
+bootstrap_summary         1
+index_salmon              1
+quant_kallisto            1
+quant_kallisto_sim        1
+quant_salmon              1
+simulate_reads            1
+total                     8
+
+Select jobs to execute...
+Failed to solve scheduling problem with ILP solver, falling back to greedy scheduler. You likely have to fix your ILP solver installation. Error message: PULP_CBC_CMD: Not Available (check permissions on cbc)
+Execute 1 jobs...
+[Sat Nov 29 18:54:29 2025]
+localrule quant_kallisto:
+    input: index/kallisto.idx, data/NA12716_R1.fastq.gz, data/NA12716_R2.fastq.gz
+    output: quant/kallisto/NA12716/abundance.tsv, quant/kallisto/NA12716/run_info.json, results/speed/kallisto_NA12716.time
+    jobid: 4
+    reason: Missing output files: quant/kallisto/NA12716/abundance.tsv, results/speed/kallisto_NA12716.time; Updated input files: data/NA12716_R1.fastq.gz, data/NA12716_R2.fastq.gz, index/kallisto.idx
+    wildcards: s=NA12716
+    resources: tmpdir=/var/folders/lc/hdfzk19x5fjdql_sy2ryg3f00000gn/T
+Shell command: 
+        r1="data/NA12716_R1.fastq.gz"
+        r2="data/NA12716_R2.fastq.gz"
+        mkdir -p quant/kallisto/NA12716 results/speed
+        (time kallisto quant -i index/kallisto.idx -o quant/kallisto/NA12716           -b 100 -t 4 $r1 $r2)           > results/speed/kallisto_NA12716.time 2>&1
+        
+Select jobs to execute...
+[Sat Nov 29 19:28:13 2025]
+Finished jobid: 4 (Rule: quant_kallisto)
+1 of 8 steps (12%) done
+Execute 1 jobs...
+[Sat Nov 29 19:28:13 2025]
+localrule index_salmon:
+    input: ref/transcripts.fa.gz
+    output: index/salmon/versionInfo.json
+    jobid: 3
+    reason: Updated input files: ref/transcripts.fa.gz
+    resources: tmpdir=/var/folders/lc/hdfzk19x5fjdql_sy2ryg3f00000gn/T
+Shell command: 
+        mkdir -p index/salmon
+        salmon index -t ref/transcripts.fa.gz -i index/salmon -k 31
+        
+Select jobs to execute...
+[Sat Nov 29 19:30:50 2025]
+Finished jobid: 3 (Rule: index_salmon)
+2 of 8 steps (25%) done
+Execute 1 jobs...
+[Sat Nov 29 19:30:50 2025]
+localrule quant_salmon:
+    input: index/salmon/versionInfo.json, data/NA12716_R1.fastq.gz, data/NA12716_R2.fastq.gz
+    output: quant/salmon/NA12716/quant.sf, results/speed/salmon_NA12716.time
+    jobid: 6
+    reason: Missing output files: results/speed/salmon_NA12716.time, quant/salmon/NA12716/quant.sf; Input files updated by another job: index/salmon/versionInfo.json
+    wildcards: s=NA12716
+    resources: tmpdir=/var/folders/lc/hdfzk19x5fjdql_sy2ryg3f00000gn/T
+Shell command: 
+        r1="data/NA12716_R1.fastq.gz"
+        r2="data/NA12716_R2.fastq.gz"
+        mkdir -p quant/salmon/NA12716 results/speed
+        (time salmon quant -i index/salmon -l A -1 $r1 -2 $r2 -p 4           -o quant/salmon/NA12716)           > results/speed/salmon_NA12716.time 2>&1
+        
+Select jobs to execute...
+[Sat Nov 29 19:37:44 2025]
+Finished jobid: 6 (Rule: quant_salmon)
+3 of 8 steps (38%) done
+Execute 1 jobs...
+[Sat Nov 29 19:37:44 2025]
+localrule simulate_reads:
+    input: ref/transcripts.fa.gz
+    output: data/sim/reads_1.fq.gz, data/sim/reads_2.fq.gz, data/sim/truth_tpm.tsv
+    jobid: 9
+    reason: Missing output files: data/sim/reads_1.fq.gz, data/sim/truth_tpm.tsv, data/sim/reads_2.fq.gz; Updated input files: ref/transcripts.fa.gz
+    resources: tmpdir=/var/folders/lc/hdfzk19x5fjdql_sy2ryg3f00000gn/T
+Shell command: 
+        mkdir -p data/sim
+        Rscript scripts/simulate_polyester.R           --transcripts ref/transcripts.fa.gz --outdir data/sim           --n_transcripts 10000 --n_reads 30000000           --read_len 75 --frag_mean 200 --frag_sd 30           --seed 42
+        
+Select jobs to execute...
+RuleException:
+CalledProcessError in file "/Users/lev/antigravity-fall25csc427/fall25-csc-bioinf/project/project-kallisto-full/Snakefile", line 166:
+Command 'set -euo pipefail;  
+        mkdir -p data/sim
+        Rscript scripts/simulate_polyester.R           --transcripts ref/transcripts.fa.gz --outdir data/sim           --n_transcripts 10000 --n_reads 30000000           --read_len 75 --frag_mean 200 --frag_sd 30           --seed 42' returned non-zero exit status 1.
+[Sat Nov 29 19:37:46 2025]
+Error in rule simulate_reads:
+    message: None
+    jobid: 9
+    input: ref/transcripts.fa.gz
+    output: data/sim/reads_1.fq.gz, data/sim/reads_2.fq.gz, data/sim/truth_tpm.tsv
+    shell:
+        
+        mkdir -p data/sim
+        Rscript scripts/simulate_polyester.R           --transcripts ref/transcripts.fa.gz --outdir data/sim           --n_transcripts 10000 --n_reads 30000000           --read_len 75 --frag_mean 200 --frag_sd 30           --seed 42
+        
+        (command exited with non-zero exit code)
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look below for error messages
+[Sat Nov 29 19:37:46 2025]
+Error in rule simulate_reads:
+    message: None
+    jobid: 9
+    input: ref/transcripts.fa.gz
+    output: data/sim/reads_1.fq.gz, data/sim/reads_2.fq.gz, data/sim/truth_tpm.tsv
+    shell:
+        
+        mkdir -p data/sim
+        Rscript scripts/simulate_polyester.R           --transcripts ref/transcripts.fa.gz --outdir data/sim           --n_transcripts 10000 --n_reads 30000000           --read_len 75 --frag_mean 200 --frag_sd 30           --seed 42
+        
+        (command exited with non-zero exit code)
+Complete log(s): /Users/lev/antigravity-fall25csc427/fall25-csc-bioinf/project/project-kallisto-full/.snakemake/log/2025-11-29T185428.940489.snakemake.log
+WorkflowError:
+At least one job did not complete successfully.

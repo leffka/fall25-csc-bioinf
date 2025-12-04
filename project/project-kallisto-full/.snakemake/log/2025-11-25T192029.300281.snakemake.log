@@ -1,0 +1,2 @@
+RuleException in file "/Users/lev/antigravity-fall25csc427/fall25-csc-bioinf/project/project-kallisto-full/Snakefile", line 41:
+Only input files can be specified as functions

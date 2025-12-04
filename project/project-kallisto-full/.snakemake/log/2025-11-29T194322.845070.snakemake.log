@@ -1,0 +1,67 @@
+Assuming unrestricted shared filesystem usage.
+host: Levs-MacBook-Pro.local
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                   count
+------------------  -------
+accuracy_eval             1
+all                       1
+bootstrap_summary         1
+quant_kallisto_sim        1
+simulate_reads            1
+total                     5
+
+Select jobs to execute...
+Failed to solve scheduling problem with ILP solver, falling back to greedy scheduler. You likely have to fix your ILP solver installation. Error message: PULP_CBC_CMD: Not Available (check permissions on cbc)
+Execute 1 jobs...
+[Sat Nov 29 19:43:23 2025]
+localrule simulate_reads:
+    input: ref/transcripts.fa.gz
+    output: data/sim/reads_1.fq.gz, data/sim/reads_2.fq.gz, data/sim/truth_tpm.tsv
+    jobid: 9
+    reason: Missing output files: data/sim/truth_tpm.tsv, data/sim/reads_1.fq.gz, data/sim/reads_2.fq.gz; Updated input files: ref/transcripts.fa.gz
+    resources: tmpdir=/var/folders/lc/hdfzk19x5fjdql_sy2ryg3f00000gn/T
+Shell command: 
+        mkdir -p data/sim
+        /opt/homebrew/Caskroom/miniconda/base/envs/kallisto-full/bin/Rscript scripts/simulate_polyester.R           --transcripts ref/transcripts.fa.gz --outdir data/sim           --n_transcripts 10000 --n_reads 30000000           --read_len 75 --frag_mean 200 --frag_sd 30           --seed 42
+        
+Select jobs to execute...
+RuleException:
+CalledProcessError in file "/Users/lev/antigravity-fall25csc427/fall25-csc-bioinf/project/project-kallisto-full/Snakefile", line 174:
+Command 'set -euo pipefail;  
+        mkdir -p data/sim
+        /opt/homebrew/Caskroom/miniconda/base/envs/kallisto-full/bin/Rscript scripts/simulate_polyester.R           --transcripts ref/transcripts.fa.gz --outdir data/sim           --n_transcripts 10000 --n_reads 30000000           --read_len 75 --frag_mean 200 --frag_sd 30           --seed 42' returned non-zero exit status 1.
+[Sat Nov 29 20:28:45 2025]
+Error in rule simulate_reads:
+    message: None
+    jobid: 9
+    input: ref/transcripts.fa.gz
+    output: data/sim/reads_1.fq.gz, data/sim/reads_2.fq.gz, data/sim/truth_tpm.tsv
+    shell:
+        
+        mkdir -p data/sim
+        /opt/homebrew/Caskroom/miniconda/base/envs/kallisto-full/bin/Rscript scripts/simulate_polyester.R           --transcripts ref/transcripts.fa.gz --outdir data/sim           --n_transcripts 10000 --n_reads 30000000           --read_len 75 --frag_mean 200 --frag_sd 30           --seed 42
+        
+        (command exited with non-zero exit code)
+Removing output files of failed job simulate_reads since they might be corrupted:
+data/sim/reads_1.fq.gz, data/sim/reads_2.fq.gz, data/sim/truth_tpm.tsv
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look below for error messages
+[Sat Nov 29 20:28:45 2025]
+Error in rule simulate_reads:
+    message: None
+    jobid: 9
+    input: ref/transcripts.fa.gz
+    output: data/sim/reads_1.fq.gz, data/sim/reads_2.fq.gz, data/sim/truth_tpm.tsv
+    shell:
+        
+        mkdir -p data/sim
+        /opt/homebrew/Caskroom/miniconda/base/envs/kallisto-full/bin/Rscript scripts/simulate_polyester.R           --transcripts ref/transcripts.fa.gz --outdir data/sim           --n_transcripts 10000 --n_reads 30000000           --read_len 75 --frag_mean 200 --frag_sd 30           --seed 42
+        
+        (command exited with non-zero exit code)
+Complete log(s): /Users/lev/antigravity-fall25csc427/fall25-csc-bioinf/project/project-kallisto-full/.snakemake/log/2025-11-29T194322.845070.snakemake.log
+WorkflowError:
+At least one job did not complete successfully.

@@ -1,0 +1,75 @@
+Assuming unrestricted shared filesystem usage.
+host: Levs-MacBook-Pro.local
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                   count
+------------------  -------
+accuracy_eval             1
+all                       1
+quant_kallisto_sim        1
+simulate_reads            1
+total                     4
+
+Select jobs to execute...
+Execute 1 jobs...
+[Mon Dec  1 09:14:49 2025]
+localrule simulate_reads:
+    input: ref/transcripts.fa.gz
+    output: data/sim/reads_1.fq.gz, data/sim/reads_2.fq.gz, data/sim/truth_tpm.tsv
+    jobid: 9
+    reason: Missing output files: data/sim/reads_1.fq.gz, data/sim/reads_2.fq.gz, data/sim/truth_tpm.tsv; Updated input files: ref/transcripts.fa.gz
+    resources: tmpdir=/var/folders/lc/hdfzk19x5fjdql_sy2ryg3f00000gn/T
+Shell command: 
+        mkdir -p data/sim
+        /opt/homebrew/Caskroom/miniconda/base/envs/kallisto-full/bin/Rscript scripts/simulate_polyester.R           --transcripts ref/transcripts.fa.gz --outdir data/sim           --n_transcripts 10000 --n_reads 30000000           --read_len 75 --frag_mean 200 --frag_sd 30           --seed 42
+        
+[Mon Dec  1 09:29:06 2025]
+Finished jobid: 9 (Rule: simulate_reads)
+1 of 4 steps (25%) done
+Select jobs to execute...
+Execute 1 jobs...
+[Mon Dec  1 09:29:06 2025]
+localrule quant_kallisto_sim:
+    input: index/kallisto.idx, data/sim/reads_1.fq.gz, data/sim/reads_2.fq.gz
+    output: quant/kallisto_sim/abundance.tsv
+    jobid: 10
+    reason: Input files updated by another job: data/sim/reads_1.fq.gz, data/sim/reads_2.fq.gz
+    resources: tmpdir=/var/folders/lc/hdfzk19x5fjdql_sy2ryg3f00000gn/T
+Shell command: 
+        mkdir -p quant/kallisto_sim
+        kallisto quant -i index/kallisto.idx -o quant/kallisto_sim -t 4 data/sim/reads_1.fq.gz data/sim/reads_2.fq.gz
+        
+[Mon Dec  1 09:31:23 2025]
+Finished jobid: 10 (Rule: quant_kallisto_sim)
+2 of 4 steps (50%) done
+Select jobs to execute...
+Execute 1 jobs...
+[Mon Dec  1 09:31:23 2025]
+localrule accuracy_eval:
+    input: data/sim/truth_tpm.tsv, quant/kallisto_sim/abundance.tsv
+    output: results/accuracy_simulated/metrics.tsv, results/accuracy_simulated/ma_plot.png
+    jobid: 8
+    reason: Input files updated by another job: quant/kallisto_sim/abundance.tsv, data/sim/truth_tpm.tsv
+    resources: tmpdir=/var/folders/lc/hdfzk19x5fjdql_sy2ryg3f00000gn/T
+Shell command: 
+        python scripts/compare_quant.py           --truth data/sim/truth_tpm.tsv --abundance quant/kallisto_sim/abundance.tsv           --outdir results/accuracy_simulated
+        
+[Mon Dec  1 09:31:40 2025]
+Finished jobid: 8 (Rule: accuracy_eval)
+3 of 4 steps (75%) done
+Select jobs to execute...
+Execute 1 jobs...
+[Mon Dec  1 09:31:40 2025]
+localrule all:
+    input: index/kallisto.idx, index/salmon/versionInfo.json, quant/kallisto/NA12716/abundance.tsv, quant/salmon/NA12716/quant.sf, results/speed/kallisto_NA12716.time, results/speed/salmon_NA12716.time, results/bootstrap/summary_demo.tsv, results/accuracy_simulated/metrics.tsv, results/accuracy_simulated/ma_plot.png
+    jobid: 0
+    reason: Input files updated by another job: results/accuracy_simulated/ma_plot.png, results/accuracy_simulated/metrics.tsv
+    resources: tmpdir=/var/folders/lc/hdfzk19x5fjdql_sy2ryg3f00000gn/T
+Shell command: None
+[Mon Dec  1 09:31:40 2025]
+Finished jobid: 0 (Rule: all)
+4 of 4 steps (100%) done
+Complete log(s): /Users/lev/antigravity-fall25csc427/fall25-csc-bioinf/project/project-kallisto-full/.snakemake/log/2025-12-01T091448.543059.snakemake.log

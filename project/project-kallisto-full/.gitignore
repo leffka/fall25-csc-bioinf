@@ -1,0 +1,12 @@
+# data + derived
+ref/
+index/
+data/
+quant/
+results/
+logs/
+
+# notebooks and caches (if any)
+.ipynb_checkpoints/
+.DS_Store
+*.tmp

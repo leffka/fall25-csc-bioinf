@@ -1,0 +1,38 @@
+Assuming unrestricted shared filesystem usage.
+host: Levs-MacBook-Pro.local
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                   count
+------------------  -------
+accuracy_eval             1
+all                       1
+bootstrap_summary         1
+fetch_reads               1
+fetch_transcripts         1
+index_kallisto            1
+index_salmon              1
+quant_kallisto            1
+quant_kallisto_sim        1
+quant_salmon              1
+simulate_reads            1
+total                    11
+
+Select jobs to execute...
+Failed to solve scheduling problem with ILP solver, falling back to greedy scheduler. You likely have to fix your ILP solver installation. Error message: PULP_CBC_CMD: Not Available (check permissions on cbc)
+Execute 1 jobs...
+[Sat Nov 29 18:11:40 2025]
+localrule fetch_reads:
+    output: data/NA12716_R1.fastq.gz, data/NA12716_R2.fastq.gz
+    jobid: 5
+    reason: Missing output files: data/NA12716_R2.fastq.gz, data/NA12716_R1.fastq.gz
+    wildcards: s=NA12716
+    resources: tmpdir=/var/folders/lc/hdfzk19x5fjdql_sy2ryg3f00000gn/T
+Shell command: 
+            mkdir -p data
+            curl -L ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR188/ERR188021/ERR188021_1.fastq.gz -o data/NA12716_R1.fastq.gz
+            curl -L ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR188/ERR188021/ERR188021_2.fastq.gz -o data/NA12716_R2.fastq.gz
+            
+Select jobs to execute...

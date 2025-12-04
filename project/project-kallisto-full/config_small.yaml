@@ -1,0 +1,36 @@
+# Toggle tiny test (fast) vs real data
+use_test_data: false
+
+# Test transcripts + reads (official kallisto tiny test)
+test_transcripts_url: "https://raw.githubusercontent.com/pachterlab/kallisto/master/test/transcripts.fasta.gz"
+test_reads_1_url: "https://raw.githubusercontent.com/pachterlab/kallisto/master/test/reads_1.fastq.gz"
+test_reads_2_url: "https://raw.githubusercontent.com/pachterlab/kallisto/master/test/reads_2.fastq.gz"
+
+# Real transcriptome - GENCODE v25 (2016 release, matching paper publication year)
+transcript_fasta_url: "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_25/gencode.v25.transcripts.fa.gz"
+
+# SMALLER TEST - SRR1039508 (1 GB, ~20M reads, runs in 10 min)
+samples:
+  airway:
+    r1: "ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR103/008/SRR1039508/SRR1039508_1.fastq.gz"
+    r2: "ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR103/008/SRR1039508/SRR1039508_2.fastq.gz"
+
+# Kallisto params
+kallisto:
+  k: 31
+  threads: 4
+  bootstraps: 30  # Reduced for faster testing
+
+# Salmon params
+salmon:
+  threads: 4
+
+# Simulation (Polyester) - smaller for testing
+simulation:
+  n_transcripts: 5000
+  n_reads_per_sample: 10000000  # 10M reads (faster)
+  paired: true
+  read_len: 75
+  frag_mean: 200
+  frag_sd: 30
+  seed: 42

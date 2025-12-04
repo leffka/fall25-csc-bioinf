@@ -1,0 +1,19 @@
+name: kallisto-full
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.11
+  - snakemake-minimal
+  - kallisto
+  - salmon
+  - r-base
+  - r-essentials
+  - r-optparse
+  - bioconductor-polyester
+  - pandas
+  - numpy
+  - matplotlib
+  - seaborn
+  - curl
+  - jq

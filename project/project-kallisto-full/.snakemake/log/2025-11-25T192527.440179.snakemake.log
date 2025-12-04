@@ -1,0 +1,78 @@
+Assuming unrestricted shared filesystem usage.
+host: Levs-MacBook-Pro.local
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                   count
+------------------  -------
+accuracy_eval             1
+all                       1
+bootstrap_summary         1
+index_salmon              1
+quant_kallisto            1
+quant_kallisto_sim        1
+quant_salmon              1
+simulate_reads            1
+total                     8
+
+Select jobs to execute...
+Failed to solve scheduling problem with ILP solver, falling back to greedy scheduler. You likely have to fix your ILP solver installation. Error message: PULP_CBC_CMD: Not Available (check permissions on cbc)
+Execute 1 jobs...
+[Tue Nov 25 19:25:27 2025]
+localrule quant_kallisto:
+    input: index/kallisto.idx, data/test_R1.fastq.gz, data/test_R2.fastq.gz
+    output: quant/kallisto/test/abundance.tsv, quant/kallisto/test/run_info.json, results/speed/kallisto_test.time
+    jobid: 4
+    reason: Missing output files: quant/kallisto/test/abundance.tsv, results/speed/kallisto_test.time
+    wildcards: s=test
+    resources: tmpdir=/var/folders/lc/hdfzk19x5fjdql_sy2ryg3f00000gn/T
+Shell command: 
+        r1="data/test_R1.fastq.gz"
+        r2="data/test_R2.fastq.gz"
+        mkdir -p quant/kallisto/test results/speed
+        (/usr/bin/time -v kallisto quant -i index/kallisto.idx -o quant/kallisto/test           -b 30 -t 4 $r1 $r2)           > results/speed/kallisto_test.time 2>&1
+        
+RuleException:
+CalledProcessError in file "/Users/lev/antigravity-fall25csc427/fall25-csc-bioinf/project/project-kallisto-full/Snakefile", line 110:
+Command 'set -euo pipefail;  
+        r1="data/test_R1.fastq.gz"
+        r2="data/test_R2.fastq.gz"
+        mkdir -p quant/kallisto/test results/speed
+        (/usr/bin/time -v kallisto quant -i index/kallisto.idx -o quant/kallisto/test           -b 30 -t 4 $r1 $r2)           > results/speed/kallisto_test.time 2>&1' returned non-zero exit status 1.
+[Tue Nov 25 19:25:28 2025]
+Error in rule quant_kallisto:
+    message: None
+    jobid: 4
+    input: index/kallisto.idx, data/test_R1.fastq.gz, data/test_R2.fastq.gz
+    output: quant/kallisto/test/abundance.tsv, quant/kallisto/test/run_info.json, results/speed/kallisto_test.time
+    shell:
+        
+        r1="data/test_R1.fastq.gz"
+        r2="data/test_R2.fastq.gz"
+        mkdir -p quant/kallisto/test results/speed
+        (/usr/bin/time -v kallisto quant -i index/kallisto.idx -o quant/kallisto/test           -b 30 -t 4 $r1 $r2)           > results/speed/kallisto_test.time 2>&1
+        
+        (command exited with non-zero exit code)
+Removing output files of failed job quant_kallisto since they might be corrupted:
+results/speed/kallisto_test.time
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look below for error messages
+[Tue Nov 25 19:25:28 2025]
+Error in rule quant_kallisto:
+    message: None
+    jobid: 4
+    input: index/kallisto.idx, data/test_R1.fastq.gz, data/test_R2.fastq.gz
+    output: quant/kallisto/test/abundance.tsv, quant/kallisto/test/run_info.json, results/speed/kallisto_test.time
+    shell:
+        
+        r1="data/test_R1.fastq.gz"
+        r2="data/test_R2.fastq.gz"
+        mkdir -p quant/kallisto/test results/speed
+        (/usr/bin/time -v kallisto quant -i index/kallisto.idx -o quant/kallisto/test           -b 30 -t 4 $r1 $r2)           > results/speed/kallisto_test.time 2>&1
+        
+        (command exited with non-zero exit code)
+Complete log(s): /Users/lev/antigravity-fall25csc427/fall25-csc-bioinf/project/project-kallisto-full/.snakemake/log/2025-11-25T192527.440179.snakemake.log
+WorkflowError:
+At least one job did not complete successfully.

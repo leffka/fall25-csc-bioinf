@@ -1,0 +1,4 @@
+SyntaxError in file "/Users/lev/antigravity-fall25csc427/fall25-csc-bioinf/project/project-kallisto-full/Snakefile", line 84:
+invalid syntax:
+          --truth {input.truth} --abundance {input.est} \
+

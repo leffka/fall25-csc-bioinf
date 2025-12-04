@@ -1,0 +1,41 @@
+Assuming unrestricted shared filesystem usage.
+host: Levs-MacBook-Pro.local
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                  count
+-----------------  -------
+all                      1
+bootstrap_summary        1
+total                    2
+
+Select jobs to execute...
+Execute 1 jobs...
+[Sat Nov 29 19:47:03 2025]
+localrule bootstrap_summary:
+    input: quant/kallisto/NA12716/abundance.tsv
+    output: results/bootstrap/summary_demo.tsv
+    jobid: 7
+    reason: Updated input files: quant/kallisto/NA12716/abundance.tsv
+    resources: tmpdir=/var/folders/lc/hdfzk19x5fjdql_sy2ryg3f00000gn/T
+Shell command: 
+        python scripts/plot_bootstrap.py           --runinfo quant/kallisto/NA12716/run_info.json           --abundance quant/kallisto/NA12716/abundance.tsv           --outdir results/bootstrap           --tag summary_demo
+        
+[Sat Nov 29 19:47:04 2025]
+Finished jobid: 7 (Rule: bootstrap_summary)
+1 of 2 steps (50%) done
+Select jobs to execute...
+Execute 1 jobs...
+[Sat Nov 29 19:47:04 2025]
+localrule all:
+    input: index/kallisto.idx, index/salmon/versionInfo.json, quant/kallisto/NA12716/abundance.tsv, quant/salmon/NA12716/quant.sf, results/speed/kallisto_NA12716.time, results/speed/salmon_NA12716.time, results/bootstrap/summary_demo.tsv
+    jobid: 0
+    reason: Input files updated by another job: results/bootstrap/summary_demo.tsv
+    resources: tmpdir=/var/folders/lc/hdfzk19x5fjdql_sy2ryg3f00000gn/T
+Shell command: None
+[Sat Nov 29 19:47:04 2025]
+Finished jobid: 0 (Rule: all)
+2 of 2 steps (100%) done
+Complete log(s): /Users/lev/antigravity-fall25csc427/fall25-csc-bioinf/project/project-kallisto-full/.snakemake/log/2025-11-29T194703.163523.snakemake.log
