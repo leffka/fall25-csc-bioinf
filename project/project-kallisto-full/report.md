@@ -77,7 +77,7 @@ To ensure correctness of reproduction, I performed two validation tests:
    - salmon: 89.0% (real data).
 The close agreement (< 1% difference) confirms both tools agree on which reads map to the transcriptome.
 
-##**Runtime Comparison**
+## **Runtime Comparison**
 kallisto
 Runtime: 33m 43s
 Mapping Rate: 88.1%
@@ -104,10 +104,11 @@ My result: 0.511
 Paper result (RSEM): 0.95-0.98
 Difference: -0.44
 
-## **Analysis of Results:**
-My Spearman correlation (ρ = 0.844) demonstrates strong rank-order agreement between kallisto's estimates and ground truth. Apparently, in the bioinformatics community, p > 0.8 is generally considered "good agreement" and p > 0.9 is considered "excellent." My result falls in the upper range of "good," confirming kallisto's accuracy despite using a simplified simulation.
 
-The gap from the paper's ρ ≈ 0.97 is attributable to two factors:
+## **Analysis of Results:**
+My Spearman correlation (p = 0.844) demonstrates strong rank-order agreement between kallisto's estimates and ground truth. Apparently, in the bioinformatics community, p > 0.8 is generally considered "good agreement" and p > 0.9 is considered "excellent." My result falls in the upper range of "good," confirming kallisto's accuracy despite using a simplified simulation.
+
+The gap from the paper's p ≈ 0.97 is attributable to two factors:
 1. Simulation Method: Polyester uses a generative model with simplified bias compared to RSEM's data-driven approach that learns complex patterns from real data
 2. Isoform Complexity: RSEM better models difficult cases like isoform switching and multi-mapping reads
 
@@ -115,7 +116,7 @@ The gap from the paper's ρ ≈ 0.97 is attributable to two factors:
 
 
 ## **CONCLUSION**
-This project demonstrates that kallisto's core findings from 2016 remain valid in 2025. Pseudoalignment enables relatively fast (orders of magnitude faster than alignment), accurate (ρ = 0.844 with simplified simulation), and efficient (low memory) transcript quantification. 
+This project demonstrates that kallisto's core findings from 2016 remain valid in 2025. Pseudoalignment enables relatively fast (orders of magnitude faster than alignment), accurate (p = 0.844 with simplified simulation), and efficient (low memory) transcript quantification. 
 
 My approach prioritized practical reproducibility over perfect methodological replication. The results confirm that kallisto represents a significant algorithmic advance that has had lasting impact on the RNA-seq community.
 
